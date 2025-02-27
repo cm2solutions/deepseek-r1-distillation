@@ -1,0 +1,56 @@
+# Knowledge Distillation Configuration
+
+# Model Configuration
+teacher:
+  model_name_or_path: "deepseek-ai/deepseek-r1-model-1b"
+  use_cache: true
+  dtype: "float16"  # Options: float32, float16, bfloat16
+
+student:
+  model_name_or_path: "deepseek-ai/deepseek-r1-model-330m"  # Could also be pre-initialized
+  use_cache: true
+  dtype: "float16"
+  initialize_from_teacher: false  # Whether to initialize from teacher
+  teacher_layer_mapping: null  # If initializing from teacher, specify layer mapping
+
+# Distillation Configuration
+distillation:
+  method: "kd"  # Options: kd, pkd, dkd, skd, mtd (different distillation methods)
+  temperature: 2.0
+  alpha: 0.5  # Weight for distillation loss vs task loss
+  layers: [-1, -2, -3, -4]  # Which layers to use for intermediate distillation
+  attention_loss_weight: 0.0  # Weight for attention map mimicking
+  hidden_loss_weight: 0.1  # Weight for hidden state mimicking
+  relation_loss_weight: 0.0  # Weight for relation-based distillation
+
+# Training Configuration
+training:
+  batch_size: 32
+  gradient_accumulation_steps: 1
+  learning_rate: 5e-5
+  weight_decay: 0.01
+  num_epochs: 3
+  warmup_steps: 500
+  max_grad_norm: 1.0
+  lr_scheduler: "linear"  # Options: linear, cosine, constant
+  optimizer: "adamw"  # Options: adamw, adafactor
+  mixed_precision: "bf16"  # Options: no, fp16, bf16
+  eval_steps: 500
+  save_steps: 1000
+  log_steps: 100
+
+# Dataset Configuration
+dataset:
+  train_file: "data/train.jsonl"
+  eval_file: "data/eval.jsonl"
+  max_seq_length: 1024
+  preprocessing_num_workers: 8
+  preprocessing_batch_size: 1000
+
+# Logging & Output
+output:
+  output_dir: "./outputs"
+  logging_dir: "./logs"
+  use_wandb: false
+  project_name: "deepseek-r1-distillation"
+  run_name: null  # Auto-generated if null
